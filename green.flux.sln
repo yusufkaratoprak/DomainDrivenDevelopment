@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.34729.46
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "green.flux", "green.flux\green.flux\green.flux.csproj", "{8D28E652-8660-4176-AF35-73B9DF3B6DC2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "green.flux.test", "green.flux\green.flux.test\green.flux.test.csproj", "{429A30C4-8FEC-4C3A-A75B-4E9FFC452BF2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D28E652-8660-4176-AF35-73B9DF3B6DC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D28E652-8660-4176-AF35-73B9DF3B6DC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D28E652-8660-4176-AF35-73B9DF3B6DC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D28E652-8660-4176-AF35-73B9DF3B6DC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{429A30C4-8FEC-4C3A-A75B-4E9FFC452BF2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{429A30C4-8FEC-4C3A-A75B-4E9FFC452BF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{429A30C4-8FEC-4C3A-A75B-4E9FFC452BF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{429A30C4-8FEC-4C3A-A75B-4E9FFC452BF2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D2C8B375-E779-4CF5-A8DF-01EC1EAEA91F}
+	EndGlobalSection
+EndGlobal

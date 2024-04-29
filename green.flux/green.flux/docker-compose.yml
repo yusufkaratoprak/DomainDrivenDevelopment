@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  greenfluxv1:
+    image: greenflux
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db
+
+  db:
+    image: "postgres:latest"
+    restart: always
+    volumes:
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: greenfluxdb
+      POSTGRES_USER: greenfluxuser
+      POSTGRES_PASSWORD: greenflux123

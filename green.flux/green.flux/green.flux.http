@@ -1,0 +1,6 @@
+@green.flux_HostAddress = http://localhost:5013
+
+GET {{green.flux_HostAddress}}/smartcharging/
+Accept: application/json
+
+###
