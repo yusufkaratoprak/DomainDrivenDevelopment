@@ -7,16 +7,14 @@ using Npgsql;
 namespace green.flux.Infrastructure
 {
 
-        public class GroupRepository : IGroupRepository
+	public class GroupRepository : IGroupRepository
+	{
+		private string _connectionString;
+
+		public GroupRepository(IConfiguration configuration)
 		{
-			private string _connectionString;
-
-			public GroupRepository(IConfiguration configuration)
-			{
-				_connectionString = configuration.GetSection("ConnectionStrings:GreenFluxDb").Value ?? throw new ArgumentNullException(nameof(configuration));
-			}
-
-
+			_connectionString = configuration.GetSection("ConnectionStrings:GreenFluxDb").Value ?? throw new ArgumentNullException(nameof(configuration));
+		}
 
 		public async Task CreateAsync(Group group)
 		{
@@ -41,57 +39,57 @@ namespace green.flux.Infrastructure
 		}
 
 		public async Task DeleteAsync(Guid groupId)
+		{
+			using (var connection = new NpgsqlConnection(_connectionString))
 			{
-				using (var connection = new NpgsqlConnection(_connectionString))
+				await connection.OpenAsync();
+				using (var transaction = await connection.BeginTransactionAsync())
 				{
-					await connection.OpenAsync();
-					using (var transaction = await connection.BeginTransactionAsync())
-					{
-						// Delete charge stations belonging to the group
-						var deleteStationsCommand = new NpgsqlCommand("DELETE FROM charge_stations WHERE group_id = @groupId", connection);
-						deleteStationsCommand.Parameters.AddWithValue("@groupId", groupId);
-						await deleteStationsCommand.ExecuteNonQueryAsync();
+					// Delete charge stations belonging to the group
+					var deleteStationsCommand = new NpgsqlCommand("DELETE FROM charge_stations WHERE group_id = @groupId", connection);
+					deleteStationsCommand.Parameters.AddWithValue("@groupId", groupId);
+					await deleteStationsCommand.ExecuteNonQueryAsync();
 
-						// Delete the group itself
-						var deleteGroupCommand = new NpgsqlCommand("DELETE FROM groups WHERE id = @groupId", connection);
-						deleteGroupCommand.Parameters.AddWithValue("@groupId", groupId);
-						await deleteGroupCommand.ExecuteNonQueryAsync();
+					// Delete the group itself
+					var deleteGroupCommand = new NpgsqlCommand("DELETE FROM groups WHERE id = @groupId", connection);
+					deleteGroupCommand.Parameters.AddWithValue("@groupId", groupId);
+					await deleteGroupCommand.ExecuteNonQueryAsync();
 
-						await transaction.CommitAsync();
-					}
+					await transaction.CommitAsync();
 				}
 			}
+		}
 
 
 		public async Task<Group> GetByIdAsync(Guid groupId)
+		{
+			using (var connection = new NpgsqlConnection(_connectionString))
 			{
-				using (var connection = new NpgsqlConnection(_connectionString))
+				await connection.OpenAsync();
+
+				var command = new NpgsqlCommand("SELECT * FROM groups WHERE id = @groupId", connection);
+				command.Parameters.AddWithValue("@groupId", groupId);
+
+				using (var reader = await command.ExecuteReaderAsync())
 				{
-					await connection.OpenAsync();
-
-					var command = new NpgsqlCommand("SELECT * FROM groups WHERE id = @groupId", connection);
-					command.Parameters.AddWithValue("@groupId", groupId);
-
-					using (var reader = await command.ExecuteReaderAsync())
+					if (await reader.ReadAsync())
 					{
-						if (await reader.ReadAsync())
+						var group = new Group
 						{
-							var group = new Group
-							{
-								ID = reader.GetGuid(reader.GetOrdinal("id")),
-								Name = reader.GetString(reader.GetOrdinal("name")),
-								Capacity = reader.GetInt32(reader.GetOrdinal("capacity")),
-								ChargeStations = new List<ChargeStation>() // Assuming you have a ChargeStation class with the correct structure
-																		   // You would need another database call to get the related ChargeStations if necessary
-							};
+							ID = reader.GetGuid(reader.GetOrdinal("id")),
+							Name = reader.GetString(reader.GetOrdinal("name")),
+							Capacity = reader.GetInt32(reader.GetOrdinal("capacity")),
+							ChargeStations = new List<ChargeStation>() // Assuming you have a ChargeStation class with the correct structure
+																	   // You would need another database call to get the related ChargeStations if necessary
+						};
 
-							return group;
-						}
+						return group;
 					}
 				}
-
-				return null;
 			}
+
+			return null;
+		}
 
 
 		public async Task UpdateAsync(Group group)

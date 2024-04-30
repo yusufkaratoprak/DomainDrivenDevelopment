@@ -1,7 +1,8 @@
-﻿using green.flux.Application;
+﻿using FluentValidation;
 using green.flux.Domain;
 using green.flux.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace green.flux.API
 {
@@ -10,15 +11,23 @@ namespace green.flux.API
 	public class ConnectorsController : ControllerBase
 	{
 		private readonly IConnectorService _connectorService;
+		private readonly IValidator<Connector> _connectorValidator;
 
-		public ConnectorsController(IConnectorService connectorService)
+		public ConnectorsController(IConnectorService connectorService, IValidator<Connector> connectorValidator)
 		{
 			_connectorService = connectorService;
+			_connectorValidator = connectorValidator;
 		}
 
 		[HttpPost]
 		public async Task<ActionResult> CreateConnector([FromBody] Connector connector)
 		{
+			var validationResult = await _connectorValidator.ValidateAsync(connector);
+			if (!validationResult.IsValid)
+			{
+				return BadRequest(validationResult.Errors);
+			}
+
 			await _connectorService.CreateConnectorAsync(connector);
 			return Ok(connector);
 		}
@@ -26,6 +35,12 @@ namespace green.flux.API
 		[HttpPut]
 		public async Task<IActionResult> UpdateConnector([FromBody] Connector connector)
 		{
+			var validationResult = await _connectorValidator.ValidateAsync(connector);
+			if (!validationResult.IsValid)
+			{
+				return BadRequest(validationResult.Errors);
+			}
+
 			await _connectorService.UpdateConnectorAsync(connector);
 			return NoContent();
 		}
@@ -47,8 +62,5 @@ namespace green.flux.API
 			}
 			return connector;
 		}
-
-
 	}
-
 }

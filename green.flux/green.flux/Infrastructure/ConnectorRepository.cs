@@ -12,7 +12,8 @@ namespace green.flux.Infrastructure
 
 		public ConnectorRepository(IConfiguration configuration)
 		{
-			_connectionString = configuration.GetConnectionString("GreenFluxDb");
+			
+			_connectionString = configuration.GetSection("ConnectionStrings:EuronextDb").Value ?? throw new ArgumentNullException(nameof(configuration));
 		}
 
 		public async Task CreateAsync(Connector connector)
@@ -46,8 +47,6 @@ namespace green.flux.Infrastructure
 							ID = reader.GetInt32(reader.GetOrdinal("id")),
 							MaxCurrent = reader.GetInt32(reader.GetOrdinal("max_current")),
 							ChargeStationId = reader.GetGuid(reader.GetOrdinal("charge_station_id")),
-							// Assume ChargeStation is loaded in a separate call
-							ChargeStation = null
 						};
 
 						return connector;

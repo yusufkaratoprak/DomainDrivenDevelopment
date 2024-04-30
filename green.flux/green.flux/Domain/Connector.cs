@@ -5,7 +5,7 @@
 		public int ID { get;  set; } 
 		public int MaxCurrent { get; set; }
 		public Guid ChargeStationId { get; set; }
-		public ChargeStation? ChargeStation { get; set; }
+	
 	
 	}
 
