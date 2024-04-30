@@ -1,7 +1,10 @@
-﻿using green.flux.Application;
+﻿using FluentValidation;
+using green.flux.Application;
 using green.flux.Domain;
 using green.flux.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace green.flux.API
 {
@@ -10,44 +13,84 @@ namespace green.flux.API
 	public class ChargeStationsController : ControllerBase
 	{
 		private readonly IChargeStationService _chargeStationService;
-
-		public ChargeStationsController(IChargeStationService chargeStationService)
+		private readonly IValidator<ChargeStation> _validator;
+		//we can use ILog if we needs but I decided not use here because of overengineering
+		public ChargeStationsController(IChargeStationService chargeStationService, IValidator<ChargeStation> validator)
 		{
 			_chargeStationService = chargeStationService;
+			_validator = validator;
 		}
 
 		[HttpPost]
 		public async Task<ActionResult> CreateChargeStation([FromBody] ChargeStation chargeStation)
 		{
-			await _chargeStationService.CreateChargeStationAsync(chargeStation);
-			return Ok(chargeStation);
+			var validationResult = await _validator.ValidateAsync(chargeStation);
+			if (!validationResult.IsValid)
+			{
+				return BadRequest(validationResult.Errors);
+			}
+
+			try
+			{
+				await _chargeStationService.CreateChargeStationAsync(chargeStation);
+				return Ok(chargeStation);
+			}
+			catch (Exception ex)
+			{   // Log the exception details here if necessary (ILog),also we can use custom exception like ConnectorController
+				return BadRequest(ex.Message);
+			}
 		}
 
 		[HttpPut]
 		public async Task<IActionResult> UpdateChargeStation([FromBody] ChargeStation chargeStation)
 		{
-			await _chargeStationService.UpdateChargeStationAsync(chargeStation);
-			return NoContent();
+			var validationResult = await _validator.ValidateAsync(chargeStation);
+			if (!validationResult.IsValid)
+			{
+				return BadRequest(validationResult.Errors);
+			}
+
+			try
+			{
+				await _chargeStationService.UpdateChargeStationAsync(chargeStation);
+				return NoContent();
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
 
-		[HttpDelete]
-		public async Task<IActionResult> DeleteChargeStation([FromBody] ChargeStation chargeStation)
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteChargeStation(Guid id)
 		{
-			await _chargeStationService.DeleteChargeStationAsync(chargeStation.ID);
-			return NoContent();
+			try
+			{
+				await _chargeStationService.DeleteChargeStationAsync(id);
+				return NoContent();
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
+
 		[HttpGet("{id}")]
 		public async Task<ActionResult<ChargeStation>> GetChargeStation(Guid id)
 		{
-			var chargeStation = await _chargeStationService.GetChargeStationByIdAsync(id);
-			if (chargeStation == null)
+			try
 			{
-				return NotFound();
+				var chargeStation = await _chargeStationService.GetChargeStationByIdAsync(id);
+				if (chargeStation == null)
+				{
+					return NotFound();
+				}
+				return Ok(chargeStation);
 			}
-			return chargeStation;
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
-
-
 	}
-
 }

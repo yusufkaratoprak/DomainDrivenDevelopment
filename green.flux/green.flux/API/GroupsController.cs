@@ -1,6 +1,9 @@
-﻿using green.flux.Application;
+﻿using FluentValidation;
+using green.flux.Application;
 using green.flux.Domain;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace green.flux.API
 {
@@ -9,45 +12,85 @@ namespace green.flux.API
 	public class GroupsController : ControllerBase
 	{
 		private readonly IGroupService _groupService;
-
-		public GroupsController(IGroupService groupService)
+		private readonly IValidator<Group> _validator;
+		//we can use ILog if we needs but I decided not use here because of overengineering
+		public GroupsController(IGroupService groupService, IValidator<Group> validator)
 		{
 			_groupService = groupService;
+			_validator = validator;
 		}
 
 		[HttpPost]
 		public async Task<ActionResult> CreateGroup([FromBody] Group group)
 		{
-			await _groupService.CreateGroupAsync(group);
-			return Ok(group);
+			var validationResult = await _validator.ValidateAsync(group);
+			if (!validationResult.IsValid)
+			{
+				return BadRequest(validationResult.Errors);
+			}
+
+			try
+			{
+				await _groupService.CreateGroupAsync(group);
+				return Ok(group);
+			}
+			catch (Exception ex)
+			{
+				// Log the exception details here if necessary (ILog),also we can use custom exception like ConnectorController
+				return BadRequest(ex.Message);
+			}
 		}
 
 		[HttpPut]
 		public async Task<IActionResult> UpdateGroup([FromBody] Group group)
 		{
-			await _groupService.UpdateGroupAsync(group);
-			return NoContent();
+			var validationResult = await _validator.ValidateAsync(group);
+			if (!validationResult.IsValid)
+			{
+				return BadRequest(validationResult.Errors);
+			}
+
+			try
+			{
+				await _groupService.UpdateGroupAsync(group);
+				return NoContent();
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
 
-		[HttpDelete]
-		public async Task<IActionResult> DeleteGroup([FromBody] Group group)
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteGroup(Guid id)
 		{
-			await _groupService.DeleteGroupAsync(group.ID);
-			return NoContent();
+			try
+			{
+				await _groupService.DeleteGroupAsync(id);
+				return NoContent();
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
 
 		[HttpGet("{id}")]
 		public async Task<ActionResult<Group>> GetGroup(Guid id)
 		{
-			var group = await _groupService.GetGroupByIdAsync(id);
-			if (group == null)
+			try
 			{
-				return NotFound();
+				var group = await _groupService.GetGroupByIdAsync(id);
+				if (group == null)
+				{
+					return NotFound();
+				}
+				return Ok(group);
 			}
-			return group;
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
 		}
-
-
 	}
-
 }
