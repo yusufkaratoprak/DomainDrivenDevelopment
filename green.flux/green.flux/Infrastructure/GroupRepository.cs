@@ -52,6 +52,11 @@ namespace green.flux.Infrastructure
 				await connection.OpenAsync();
 				using (var transaction = await connection.BeginTransactionAsync())
 				{
+					// Delete connectors first if not using ON DELETE CASCADE
+					var deleteConnectorsCommand = new NpgsqlCommand("DELETE FROM connectors WHERE charge_station_id IN (SELECT id FROM charge_stations WHERE group_id = @groupId)", connection);
+					deleteConnectorsCommand.Parameters.AddWithValue("@groupId", groupId);
+					await deleteConnectorsCommand.ExecuteNonQueryAsync();
+
 					// Delete charge stations belonging to the group
 					var deleteStationsCommand = new NpgsqlCommand("DELETE FROM charge_stations WHERE group_id = @groupId", connection);
 					deleteStationsCommand.Parameters.AddWithValue("@groupId", groupId);
@@ -66,6 +71,7 @@ namespace green.flux.Infrastructure
 				}
 			}
 		}
+
 
 
 		public async Task<Group> GetByIdAsync(Guid groupId)
@@ -85,9 +91,7 @@ namespace green.flux.Infrastructure
 						{
 							ID = reader.GetGuid(reader.GetOrdinal("id")),
 							Name = reader.GetString(reader.GetOrdinal("name")),
-							Capacity = reader.GetInt32(reader.GetOrdinal("capacity")),
-							ChargeStations = new List<ChargeStation>() // Assuming you have a ChargeStation class with the correct structure
-																	   // You would need another database call to get the related ChargeStations if necessary
+							Capacity = reader.GetInt32(reader.GetOrdinal("capacity"))
 						};
 
 						return group;

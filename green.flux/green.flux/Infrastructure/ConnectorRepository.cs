@@ -15,7 +15,6 @@ namespace green.flux.Infrastructure
 
 			_connectionString = configuration.GetSection("ConnectionStrings:GreenFluxDb").Value ?? throw new ArgumentNullException(nameof(configuration));
 		}
-
 		public async Task<Connector> CreateAsync(Connector connector)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
@@ -43,8 +42,6 @@ namespace green.flux.Infrastructure
 			}
 			return null;
 		}
-
-
 		public async Task<Connector> GetByIdAsync(int id)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
@@ -70,7 +67,6 @@ namespace green.flux.Infrastructure
 			}
 			return null;
 		}
-
 		public async Task UpdateAsync(Connector connector)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
@@ -84,7 +80,6 @@ namespace green.flux.Infrastructure
 				await command.ExecuteNonQueryAsync();
 			}
 		}
-
 		public async Task DeleteAsync(int id)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))

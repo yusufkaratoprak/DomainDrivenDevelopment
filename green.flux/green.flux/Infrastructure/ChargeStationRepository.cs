@@ -44,7 +44,6 @@ namespace green.flux.Infrastructure
 			return null;
 		}
 
-
 		public async Task<ChargeStation> GetByIdAsync(Guid id)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
