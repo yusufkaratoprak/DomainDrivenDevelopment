@@ -15,18 +15,35 @@ namespace green.flux.Infrastructure
 			_connectionString = configuration.GetSection("ConnectionStrings:GreenFluxDb").Value ?? throw new ArgumentNullException(nameof(configuration));
 		}
 
-		public async Task CreateAsync(ChargeStation chargeStation)
+		public async Task<ChargeStation> CreateAsync(ChargeStation chargeStation)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
-				var command = new NpgsqlCommand("INSERT INTO charge_stations (name, group_id) VALUES (@name, @groupId)", connection);
-				command.Parameters.AddWithValue("@name", chargeStation.Name);
-				command.Parameters.AddWithValue("@groupId", chargeStation.GroupId);
+				var insertQuery = "INSERT INTO charge_stations (name, group_id) VALUES (@name, @groupId) RETURNING *;";
 
-				await command.ExecuteNonQueryAsync();
+				using (var command = new NpgsqlCommand(insertQuery, connection))
+				{
+					command.Parameters.AddWithValue("@name", chargeStation.Name);
+					command.Parameters.AddWithValue("@groupId", chargeStation.GroupId);
+
+					using (var reader = await command.ExecuteReaderAsync())
+					{
+						if (await reader.ReadAsync())
+						{
+							return new ChargeStation
+							{
+								ID = reader.GetGuid(reader.GetOrdinal("id")),
+								Name = reader.GetString(reader.GetOrdinal("name")),
+								GroupId = reader.GetGuid(reader.GetOrdinal("group_id")),
+							};
+						}
+					}
+				}
 			}
+			return null;
 		}
+
 
 		public async Task<ChargeStation> GetByIdAsync(Guid id)
 		{

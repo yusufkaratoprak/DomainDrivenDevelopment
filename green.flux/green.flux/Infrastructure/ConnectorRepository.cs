@@ -16,18 +16,34 @@ namespace green.flux.Infrastructure
 			_connectionString = configuration.GetSection("ConnectionStrings:GreenFluxDb").Value ?? throw new ArgumentNullException(nameof(configuration));
 		}
 
-		public async Task CreateAsync(Connector connector)
+		public async Task<Connector> CreateAsync(Connector connector)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
-				var command = new NpgsqlCommand("INSERT INTO connectors (max_current, charge_station_id) VALUES (@maxCurrent, @chargeStationId)", connection);
-				command.Parameters.AddWithValue("@maxCurrent", connector.MaxCurrent);
-				command.Parameters.AddWithValue("@chargeStationId", connector.ChargeStationId);
+				var insertQuery = "INSERT INTO connectors (max_current, charge_station_id) VALUES (@maxCurrent, @chargeStationId) RETURNING *;";
+				using (var command = new NpgsqlCommand(insertQuery, connection))
+				{
+					command.Parameters.AddWithValue("@maxCurrent", connector.MaxCurrent);
+					command.Parameters.AddWithValue("@chargeStationId", connector.ChargeStationId);
 
-				await command.ExecuteNonQueryAsync();
+					using (var reader = await command.ExecuteReaderAsync())
+					{
+						if (await reader.ReadAsync())
+						{
+							return new Connector
+							{
+								ID = reader.GetInt32(reader.GetOrdinal("id")), // Assuming 'id' is an auto-increment field
+								MaxCurrent = reader.GetInt32(reader.GetOrdinal("max_current")),
+								ChargeStationId = reader.GetGuid(reader.GetOrdinal("charge_station_id")),
+							};
+						}
+					}
+				}
 			}
+			return null;
 		}
+
 
 		public async Task<Connector> GetByIdAsync(int id)
 		{

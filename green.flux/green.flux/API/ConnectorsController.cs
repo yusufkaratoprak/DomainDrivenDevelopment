@@ -27,12 +27,9 @@ namespace green.flux.API
 			{
 				var validationResult = await _connectorValidator.ValidateAsync(connector);
 				if (!validationResult.IsValid)
-				{
 					return BadRequest(validationResult.Errors);
-				}
-
-				await _connectorService.CreateConnectorAsync(connector);
-				return Ok(new { Status = "200", Message = "Success", Method = "Create" });
+				var result = await _connectorService.CreateConnectorAsync(connector);
+				return Ok(new { Status = "200", Message = "Success", Method = "Create", ID = result.ID });
 			}
 			catch (Exception ex)
 			{
@@ -59,7 +56,7 @@ namespace green.flux.API
 				}
 
 				await _connectorService.UpdateConnectorAsync(connector);
-				return Ok(new { Status = "200", Message = "Success", Method = "Update" });
+				return Ok(new { Status = "200", Message = "Success", Method = "Update"});
 			}
 			catch (Exception ex)
 			{

@@ -26,14 +26,11 @@ namespace green.flux.API
 		{
 			var validationResult = await _validator.ValidateAsync(chargeStation);
 			if (!validationResult.IsValid)
-			{
 				return BadRequest(validationResult.Errors);
-			}
-
 			try
 			{
-				await _chargeStationService.CreateChargeStationAsync(chargeStation);
-				return Ok(chargeStation);
+				var result = await _chargeStationService.CreateChargeStationAsync(chargeStation);
+				return Ok(result);
 			}
 			catch (Exception ex)
 			{   // Log the exception details here if necessary (ILog),also we can use custom exception like ConnectorController

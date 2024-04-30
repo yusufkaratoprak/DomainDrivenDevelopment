@@ -25,14 +25,11 @@ namespace green.flux.API
 		{
 			var validationResult = await _validator.ValidateAsync(group);
 			if (!validationResult.IsValid)
-			{
 				return BadRequest(validationResult.Errors);
-			}
-
 			try
 			{
-				await _groupService.CreateGroupAsync(group);
-				return Ok(group);
+				var result = await _groupService.CreateGroupAsync(group);
+				return Ok(result);
 			}
 			catch (Exception ex)
 			{

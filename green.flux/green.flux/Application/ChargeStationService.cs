@@ -16,7 +16,7 @@ namespace green.flux.Infrastructure
 			_groupRepository = groupRepository;
 		}
 
-		public async Task CreateChargeStationAsync(ChargeStation chargeStation)
+		public async Task<ChargeStation> CreateChargeStationAsync(ChargeStation chargeStation)
 		{
 			if (chargeStation == null)
 				throw new ArgumentNullException(nameof(chargeStation));
@@ -26,7 +26,7 @@ namespace green.flux.Infrastructure
 			if (group == null)
 				throw new InvalidOperationException($"Group with ID {chargeStation.GroupId} does not exist.");
 
-			await _chargeStationRepository.CreateAsync(chargeStation);
+			return await _chargeStationRepository.CreateAsync(chargeStation);
 		}
 
 		public async Task UpdateChargeStationAsync(ChargeStation chargeStation)

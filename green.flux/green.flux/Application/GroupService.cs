@@ -12,13 +12,11 @@ namespace green.flux.Infrastructure
 			_groupRepository = groupRepository;
 		}
 
-		public async Task CreateGroupAsync(Group group)
+		public async Task<Group> CreateGroupAsync(Group group)
 		{
-			// Validate group details, apply business rules, etc.
 			if (group == null)
 				throw new ArgumentNullException(nameof(group));
-
-			await _groupRepository.CreateAsync(group);
+			return await _groupRepository.CreateAsync(group);
 		}
 
 		public async Task UpdateGroupAsync(Group group)
@@ -30,7 +28,6 @@ namespace green.flux.Infrastructure
 
 		public async Task DeleteGroupAsync(Guid groupId)
 		{
-			// Check if the group exists
 			var group = await _groupRepository.GetByIdAsync(groupId);
 			if (group == null)
 				throw new InvalidOperationException($"Group with ID {groupId} does not exist.");

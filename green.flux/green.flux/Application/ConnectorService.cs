@@ -17,21 +17,17 @@ namespace green.flux.Infrastructure
 			_chargeStationRepository = chargeStationRepository;
 		}
 
-		public async Task CreateConnectorAsync(Connector connector)
+		public async Task<Connector> CreateConnectorAsync(Connector connector)
 		{
 			if (connector == null)
 				throw new ArgumentNullException(nameof(connector));
-
-			// Validate that the charge station exists
 			var chargeStation = await _chargeStationRepository.GetByIdAsync(connector.ChargeStationId);
 			if (chargeStation == null)
 				throw new InvalidOperationException($"Charge station with ID {connector.ChargeStationId} does not exist.");
-
-			// Validate that adding the connector does not exceed the number of allowed connectors
 			if (chargeStation.Connectors.Count >= 5)
 				throw new InvalidOperationException("The charge station already has the maximum number of connectors.");
 
-			await _connectorRepository.CreateAsync(connector);
+			return await _connectorRepository.CreateAsync(connector);
 		}
 
 		public async Task UpdateConnectorAsync(Connector connector)
@@ -44,8 +40,6 @@ namespace green.flux.Infrastructure
 
 		public async Task DeleteConnectorAsync(int connectorId)
 		{
-			// Validate as needed
-
 			await _connectorRepository.DeleteAsync(connectorId);
 		}
 

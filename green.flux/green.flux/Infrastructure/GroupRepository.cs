@@ -16,27 +16,34 @@ namespace green.flux.Infrastructure
 			_connectionString = configuration.GetSection("ConnectionStrings:GreenFluxDb").Value ?? throw new ArgumentNullException(nameof(configuration));
 		}
 
-		public async Task CreateAsync(Group group)
+		public async Task<Group> CreateAsync(Group group)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
-
 				if (!await IsGroupCapacityValid(group))
-				{
 					throw new InvalidOperationException("The group's capacity is less than the sum of the max current of all connectors.");
-				}
-
-				using (var command = new NpgsqlCommand("INSERT INTO groups (name, capacity) VALUES (@name, @capacity)", connection))
+				string insertQuery = "INSERT INTO groups (name, capacity) VALUES (@name, @capacity) RETURNING *;";
+				using (var command = new NpgsqlCommand(insertQuery, connection))
 				{
-					
 					command.Parameters.AddWithValue("@name", group.Name);
 					command.Parameters.AddWithValue("@capacity", group.Capacity);
 
-					await command.ExecuteNonQueryAsync();
+					using (var reader = await command.ExecuteReaderAsync())
+					{
+						if (await reader.ReadAsync())
+							return new Group
+							{
+								ID = reader.GetGuid(reader.GetOrdinal("id")),
+								Name = reader.GetString(reader.GetOrdinal("name")),
+								Capacity = reader.GetInt32(reader.GetOrdinal("capacity")),
+							};
+					}
 				}
 			}
+			return null; 
 		}
+
 
 		public async Task DeleteAsync(Guid groupId)
 		{
