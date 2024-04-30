@@ -12,8 +12,8 @@ namespace green.flux.Infrastructure
 
 		public ConnectorRepository(IConfiguration configuration)
 		{
-			
-			_connectionString = configuration.GetSection("ConnectionStrings:EuronextDb").Value ?? throw new ArgumentNullException(nameof(configuration));
+
+			_connectionString = configuration.GetSection("ConnectionStrings:GreenFluxDb").Value ?? throw new ArgumentNullException(nameof(configuration));
 		}
 
 		public async Task CreateAsync(Connector connector)
