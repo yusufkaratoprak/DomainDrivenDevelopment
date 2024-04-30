@@ -9,9 +9,7 @@ namespace green.flux.Validation
 	{
 		public GroupValidator()
 		{
-			RuleFor(group => group.ID)
-				.NotEmpty().WithMessage("Identifier is required.");
-
+			
 			RuleFor(group => group.Name)
 				.NotEmpty().WithMessage("Name is required.");
 

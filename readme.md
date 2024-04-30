@@ -32,3 +32,5 @@ IIS :
 https://localhost:44341/swagger/index.html
 Docker : 
 https://localhost:32780/swagger/index.html
+Docker-Compose: 
+http://localhost:8080/swagger/index.html

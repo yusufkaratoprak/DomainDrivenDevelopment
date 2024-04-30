@@ -21,8 +21,7 @@ namespace green.flux.Infrastructure
 			using (var connection = new NpgsqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
-				var command = new NpgsqlCommand("INSERT INTO connectors (id, max_current, charge_station_id) VALUES (@id, @maxCurrent, @chargeStationId)", connection);
-				command.Parameters.AddWithValue("@id", connector.ID);
+				var command = new NpgsqlCommand("INSERT INTO connectors (max_current, charge_station_id) VALUES (@maxCurrent, @chargeStationId)", connection);
 				command.Parameters.AddWithValue("@maxCurrent", connector.MaxCurrent);
 				command.Parameters.AddWithValue("@chargeStationId", connector.ChargeStationId);
 

@@ -27,9 +27,9 @@ namespace green.flux.Infrastructure
 					throw new InvalidOperationException("The group's capacity is less than the sum of the max current of all connectors.");
 				}
 
-				using (var command = new NpgsqlCommand("INSERT INTO groups (id, name, capacity) VALUES (@id, @name, @capacity)", connection))
+				using (var command = new NpgsqlCommand("INSERT INTO groups (name, capacity) VALUES (@name, @capacity)", connection))
 				{
-					command.Parameters.AddWithValue("@id", group.ID);
+					
 					command.Parameters.AddWithValue("@name", group.Name);
 					command.Parameters.AddWithValue("@capacity", group.Capacity);
 

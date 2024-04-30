@@ -7,8 +7,6 @@ namespace green.flux.Validation
 	{
 		public ConnectorValidator()
 		{
-			RuleFor(connector => connector.ID)
-				.NotEmpty().WithMessage("Identifier is required.");
 
 			RuleFor(connector => connector.MaxCurrent)
 				.GreaterThan(0).WithMessage("Max current must be greater than zero.");
