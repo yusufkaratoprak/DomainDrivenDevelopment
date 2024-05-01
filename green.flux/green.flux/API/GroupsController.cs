@@ -33,7 +33,7 @@ namespace green.flux.API
 			if (!validationResult.IsValid)
 				return BadRequest(validationResult.Errors);
 
-			if (group.ChargeStations.Count > 1)
+			if (group.ChargeStations?.Count > 1)
 				return BadRequest("A group cannot contain more than one charge station.");
 
 			try
@@ -42,7 +42,7 @@ namespace green.flux.API
 				var result = await _groupService.CreateGroupAsync(group);
 
 				// If there's exactly one charge station, create it
-				if (group.ChargeStations.Count == 1)
+				if (group.ChargeStations?.Count == 1)
 				{
 					var chargeStation = group.ChargeStations.First();
 					chargeStation.GroupId = result.ID;  // Set the GroupId to the newly created group's ID
