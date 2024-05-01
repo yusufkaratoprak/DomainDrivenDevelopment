@@ -26,8 +26,14 @@ namespace green.flux.API
 			var validationResult = await _validator.ValidateAsync(group);
 			if (!validationResult.IsValid)
 				return BadRequest(validationResult.Errors);
+
+			// Validate the number of charge stations
+			if (group.ChargeStations.Count > 1)
+				return BadRequest("A group cannot contain more than one charge station.");
+
 			try
 			{
+				// Create the group first
 				var result = await _groupService.CreateGroupAsync(group);
 
 				// If there's exactly one charge station, create it
@@ -35,17 +41,18 @@ namespace green.flux.API
 				{
 					var chargeStation = group.ChargeStations.First();
 					chargeStation.GroupId = result.ID;  // Set the GroupId to the newly created group's ID
-					await _chargeStationService.CreateChargeStationAsync(chargeStation);
+					//await _chargeStationService.CreateChargeStationAsync(chargeStation);
 				}
 
 				return Ok(result);
 			}
 			catch (Exception ex)
 			{
-				// Log the exception details here if necessary (ILog),also we can use custom exception like ConnectorController
+				// Log the exception details here if necessary
 				return BadRequest(ex.Message);
 			}
 		}
+
 
 		[HttpPut]
 		public async Task<IActionResult> UpdateGroup([FromBody] Group group)
