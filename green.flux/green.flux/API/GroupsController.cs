@@ -13,13 +13,12 @@ namespace green.flux.API
 	public class GroupsController : ControllerBase
 	{
 		private readonly IGroupService _groupService;
-		private readonly IChargeStationService _chargeStationService;
 		private readonly IValidator<Group> _validator;
 		//we can use ILog if we needs but I decided not to use here because of overengineering
-		public GroupsController(IGroupService groupService, IChargeStationService chargeStationService, IValidator<Group> validator)
+		public GroupsController(IGroupService groupService,IValidator<Group> validator)
 		{
 			_groupService = groupService;
-			_chargeStationService = chargeStationService;
+//			_chargeStationService = chargeStationService;
 			_validator = validator;
 		}
 
@@ -38,13 +37,13 @@ namespace green.flux.API
 				// Create the group first
 				var result = await _groupService.CreateGroupAsync(group);
 
-				// If there's exactly one charge station, create it
-				if (group.ChargeStations.Count == 1)
-				{
-					var chargeStation = group.ChargeStations.First();
-					chargeStation.GroupId = result.ID;  // Set the GroupId to the newly created group's ID
-					await _chargeStationService.CreateChargeStationAsync(chargeStation);
-				}
+				//// If there's exactly one charge station, create it
+				//if (group.ChargeStations.Count == 1)
+				//{
+				//	var chargeStation = group.ChargeStations.First();
+				//	chargeStation.GroupId = result.ID;  // Set the GroupId to the newly created group's ID
+				//	await _chargeStationService.CreateChargeStationAsync(chargeStation);
+				//}
 
 				return Ok(result);
 			}
