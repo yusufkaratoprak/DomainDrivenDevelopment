@@ -91,24 +91,12 @@ namespace green.flux.Infrastructure
 			using (var connection = new NpgsqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
+				var command = new NpgsqlCommand("DELETE FROM charge_stations WHERE id = @id", connection);
+				command.Parameters.AddWithValue("@id", id);
 
-				using (var transaction = await connection.BeginTransactionAsync())
-				{
-					// First, delete all connectors associated with this charge station
-					var deleteConnectorsCommand = new NpgsqlCommand("DELETE FROM connectors WHERE charge_station_id = @id", connection);
-					deleteConnectorsCommand.Parameters.AddWithValue("@id", id);
-					await deleteConnectorsCommand.ExecuteNonQueryAsync();
-
-					// Now, delete the charge station
-					var deleteStationCommand = new NpgsqlCommand("DELETE FROM charge_stations WHERE id = @id", connection);
-					deleteStationCommand.Parameters.AddWithValue("@id", id);
-					await deleteStationCommand.ExecuteNonQueryAsync();
-
-					await transaction.CommitAsync();
-				}
+				await command.ExecuteNonQueryAsync();
 			}
 		}
-
 
 	}
 }
