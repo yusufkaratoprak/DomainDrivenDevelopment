@@ -9,10 +9,6 @@ namespace green.flux.Validation
 	{
 		public GroupValidator()
 		{
-			
-			RuleFor(group => group.Name)
-				.NotEmpty().WithMessage("Name is required.");
-
 			RuleFor(group => group.Capacity)
 				.GreaterThan(0).WithMessage("Capacity must be greater than zero.");
 		}

@@ -72,14 +72,35 @@ namespace green.flux.Infrastructure
 			using (var connection = new NpgsqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
-				var command = new NpgsqlCommand("UPDATE connectors SET max_current = @maxCurrent, charge_station_id = @chargeStationId WHERE id = @id", connection);
-				command.Parameters.AddWithValue("@maxCurrent", connector.MaxCurrent);
-				command.Parameters.AddWithValue("@chargeStationId", connector.ChargeStationId);
-				command.Parameters.AddWithValue("@id", connector.ID);
+				List<string> updates = new List<string>();
 
-				await command.ExecuteNonQueryAsync();
+				if (connector.MaxCurrent > 0) // Assuming 0 is not a valid value
+					updates.Add("max_current = @maxCurrent");
+
+				if (connector.ChargeStationId != Guid.Empty) // Assuming Guid.Empty means it's not set
+					updates.Add("charge_station_id = @chargeStationId");
+
+				if (!updates.Any())
+					throw new ArgumentException("No update information provided.");
+
+				string updateClause = string.Join(", ", updates);
+				var commandText = $"UPDATE connectors SET {updateClause} WHERE id = @id";
+
+				using (var command = new NpgsqlCommand(commandText, connection))
+				{
+					if (connector.MaxCurrent > 0)
+						command.Parameters.AddWithValue("@maxCurrent", connector.MaxCurrent);
+
+					if (connector.ChargeStationId != Guid.Empty)
+						command.Parameters.AddWithValue("@chargeStationId", connector.ChargeStationId);
+
+					command.Parameters.AddWithValue("@id", connector.ID);
+
+					await command.ExecuteNonQueryAsync();
+				}
 			}
 		}
+
 		public async Task DeleteAsync(int id)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))

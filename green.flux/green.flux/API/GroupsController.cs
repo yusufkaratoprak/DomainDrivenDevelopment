@@ -12,14 +12,17 @@ namespace green.flux.API
 	[Route("[controller]")]
 	public class GroupsController : ControllerBase
 	{
+
 		private readonly IGroupService _groupService;
 		private readonly IChargeStationService _chargeStationService;
+		private readonly IConnectorService _connectorService;  // Assuming this service exists
 		private readonly IValidator<Group> _validator;
-		//we can use ILog if we needs but I decided not use here because of overengineering
-		public GroupsController(IGroupService groupService, IChargeStationService chargeStationService, IValidator<Group> validator)
+
+		public GroupsController(IGroupService groupService, IChargeStationService chargeStationService, IConnectorService connectorService, IValidator<Group> validator)
 		{
 			_groupService = groupService;
 			_chargeStationService = chargeStationService;
+			_connectorService = connectorService;  // Initialize the connector service
 			_validator = validator;
 		}
 
@@ -30,7 +33,6 @@ namespace green.flux.API
 			if (!validationResult.IsValid)
 				return BadRequest(validationResult.Errors);
 
-			// Validate the number of charge stations
 			if (group.ChargeStations.Count > 1)
 				return BadRequest("A group cannot contain more than one charge station.");
 
@@ -44,7 +46,17 @@ namespace green.flux.API
 				{
 					var chargeStation = group.ChargeStations.First();
 					chargeStation.GroupId = result.ID;  // Set the GroupId to the newly created group's ID
-					await _chargeStationService.CreateChargeStationAsync(chargeStation);
+					var stationResult = await _chargeStationService.CreateChargeStationAsync(chargeStation);
+
+					// Check if there are any connectors to create
+					if (chargeStation.Connectors != null && chargeStation.Connectors.Count > 0)
+					{
+						foreach (var connector in chargeStation.Connectors)
+						{
+							connector.ChargeStationId = stationResult.ID;  // Set the ChargeStationId to the newly created charge station's ID
+							await _connectorService.CreateConnectorAsync(connector);
+						}
+					}
 				}
 
 				return Ok(result);
@@ -55,6 +67,7 @@ namespace green.flux.API
 				return BadRequest(ex.Message);
 			}
 		}
+
 
 
 		[HttpPut]

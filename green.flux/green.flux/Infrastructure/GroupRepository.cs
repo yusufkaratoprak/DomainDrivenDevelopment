@@ -114,16 +114,32 @@ namespace green.flux.Infrastructure
 					throw new InvalidOperationException("The group's capacity is less than the sum of the max current of all connectors.");
 				}
 
-				using (var command = new NpgsqlCommand("UPDATE groups SET name = @name, capacity = @capacity WHERE id = @id", connection))
+				List<string> updates = new List<string>();
+				if (!string.IsNullOrEmpty(group.Name))
+					updates.Add("name = @name");
+				if (group.Capacity > 0) // Assuming 0 is not a valid capacity
+					updates.Add("capacity = @capacity");
+
+				if (!updates.Any())
+					throw new ArgumentException("No update information provided.");
+
+				string updateClause = string.Join(", ", updates);
+				var commandText = $"UPDATE groups SET {updateClause} WHERE id = @id";
+
+				using (var command = new NpgsqlCommand(commandText, connection))
 				{
-					command.Parameters.AddWithValue("@name", group.Name);
-					command.Parameters.AddWithValue("@capacity", group.Capacity);
+					if (!string.IsNullOrEmpty(group.Name))
+						command.Parameters.AddWithValue("@name", group.Name);
+					if (group.Capacity > 0)
+						command.Parameters.AddWithValue("@capacity", group.Capacity);
+
 					command.Parameters.AddWithValue("@id", group.ID);
 
 					await command.ExecuteNonQueryAsync();
 				}
 			}
 		}
+
 
 		private async Task<bool> IsGroupCapacityValid(Group group)
 		{

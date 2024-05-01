@@ -77,14 +77,35 @@ namespace green.flux.Infrastructure
 			using (var connection = new NpgsqlConnection(_connectionString))
 			{
 				await connection.OpenAsync();
-				var command = new NpgsqlCommand("UPDATE charge_stations SET name = @name, group_id = @groupId WHERE id = @id", connection);
-				command.Parameters.AddWithValue("@name", chargeStation.Name);
-				command.Parameters.AddWithValue("@groupId", chargeStation.GroupId);
-				command.Parameters.AddWithValue("@id", chargeStation.ID);
+				List<string> updates = new List<string>();
 
-				await command.ExecuteNonQueryAsync();
+				if (!string.IsNullOrEmpty(chargeStation.Name))
+					updates.Add("name = @name");
+
+				if (chargeStation.GroupId != Guid.Empty)  // Assuming Guid.Empty means it's not set
+					updates.Add("group_id = @groupId");
+
+				if (updates.Count == 0)
+					throw new ArgumentException("No update information provided.");
+
+				string updateClause = string.Join(", ", updates);
+				var commandText = $"UPDATE charge_stations SET {updateClause} WHERE id = @id";
+
+				using (var command = new NpgsqlCommand(commandText, connection))
+				{
+					if (!string.IsNullOrEmpty(chargeStation.Name))
+						command.Parameters.AddWithValue("@name", chargeStation.Name);
+
+					if (chargeStation.GroupId != Guid.Empty)
+						command.Parameters.AddWithValue("@groupId", chargeStation.GroupId);
+
+					command.Parameters.AddWithValue("@id", chargeStation.ID);
+
+					await command.ExecuteNonQueryAsync();
+				}
 			}
 		}
+
 
 		public async Task DeleteAsync(Guid id)
 		{
