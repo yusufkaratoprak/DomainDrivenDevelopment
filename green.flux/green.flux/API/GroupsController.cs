@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using green.flux.Application;
 using green.flux.Domain;
+using green.flux.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -12,11 +13,13 @@ namespace green.flux.API
 	public class GroupsController : ControllerBase
 	{
 		private readonly IGroupService _groupService;
+		private readonly IChargeStationService _chargeStationService;
 		private readonly IValidator<Group> _validator;
 		//we can use ILog if we needs but I decided not use here because of overengineering
-		public GroupsController(IGroupService groupService, IValidator<Group> validator)
+		public GroupsController(IGroupService groupService, IChargeStationService chargeStationService, IValidator<Group> validator)
 		{
 			_groupService = groupService;
+			_chargeStationService = chargeStationService;
 			_validator = validator;
 		}
 
@@ -41,7 +44,7 @@ namespace green.flux.API
 				{
 					var chargeStation = group.ChargeStations.First();
 					chargeStation.GroupId = result.ID;  // Set the GroupId to the newly created group's ID
-					//await _chargeStationService.CreateChargeStationAsync(chargeStation);
+					await _chargeStationService.CreateChargeStationAsync(chargeStation);
 				}
 
 				return Ok(result);
