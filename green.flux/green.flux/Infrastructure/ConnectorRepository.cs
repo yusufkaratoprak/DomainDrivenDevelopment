@@ -100,7 +100,6 @@ namespace green.flux.Infrastructure
 				}
 			}
 		}
-
 		public async Task DeleteAsync(int id)
 		{
 			using (var connection = new NpgsqlConnection(_connectionString))
