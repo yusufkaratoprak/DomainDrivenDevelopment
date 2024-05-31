@@ -1,6 +1,6 @@
 #  API Usage Guide For Domain Driven 
 
-This guide provides instructions on how to set up and interact with the GreenFlux API, which is running in a Docker container alongside a PostgreSQL database.
+This guide provides instructions on how to set up and interact with the Any API, which is running in a Docker container alongside a PostgreSQL database.
 
 ## Prerequisites
 
